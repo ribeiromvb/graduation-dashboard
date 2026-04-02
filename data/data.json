@@ -1,0 +1,68 @@
+{
+  "semesters": {
+    "FA25": {
+      "label": "Fall 2025",
+      "credential_types": {
+        "Associate":   421,
+        "Bachelor":    1783,
+        "Certificate": 2638
+      },
+      "application_summary": {
+        "Applications": 5271,
+        "Graduated":    4842,
+        "Other":        342,
+        "Incomplete":   87
+      },
+      "holds": {
+        "No Holds": 4589,
+        "Holds":    253
+      },
+      "incomplete_reasons": {
+        "Missing Course":     54,
+        "Missing Credits":    13,
+        "Missing Internship": 16,
+        "Insufficient GPA":   2,
+        "Missing Test Score": 2
+      },
+      "hold_codes": {
+        "PDUE": 246,
+        "HNR":  7
+      },
+      "certificate_auto_award": {
+        "auto_day":       1845,
+        "auto_onln":      362,
+        "student_applied": 431,
+        "incomplete":     94
+      },
+      "tracking": {
+        "cohorts":  ["FA25", "SP25", "WI25", "FA24"],
+        "censuses": ["FA25", "SP25", "WI25", "FA24", "SP24"],
+        "cells": {
+          "FA25": { "FA25": [2205, 2407] },
+          "SP25": { "FA25": [1958, 2087], "SP25": [1903, 2120] },
+          "WI25": { "FA25": [2433, 2592], "SP25": null,         "WI25": [2334, 2639] },
+          "FA24": { "FA25": [2902, 3415], "SP25": null,         "WI25": null,         "FA24": [2772, 3431], "SP24": "in progress" }
+        }
+      }
+    }
+  },
+  "completion_history": [
+    { "term": "SP24", "completed": 2743, "expired": 79  },
+    { "term": "WI24", "completed": 2782, "expired": 51  },
+    { "term": "FA23", "completed": 2857, "expired": 69  },
+    { "term": "SP23", "completed": 2611, "expired": 170 },
+    { "term": "WI23", "completed": 2992, "expired": 154 },
+    { "term": "FA22", "completed": 2824, "expired": 113 },
+    { "term": "SP22", "completed": 2831, "expired": 188 },
+    { "term": "WI22", "completed": 2763, "expired": 157 },
+    { "term": "FA21", "completed": 2743, "expired": 173 },
+    { "term": "SP21", "completed": 2669, "expired": 129 },
+    { "term": "WI21", "completed": 2561, "expired": 111 },
+    { "term": "FA20", "completed": 2640, "expired": 161 },
+    { "term": "SP20", "completed": 2456, "expired": 110 },
+    { "term": "WI20", "completed": 2572, "expired": 18  },
+    { "term": "FA19", "completed": 2615, "expired": 98  },
+    { "term": "SP19", "completed": 2584, "expired": 75  },
+    { "term": "WI19", "completed": 2455, "expired": 87  }
+  ]
+}
