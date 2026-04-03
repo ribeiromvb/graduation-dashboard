@@ -715,7 +715,7 @@ st.markdown("<br>", unsafe_allow_html=True)
 # ═══════════════════════════════════════════════════════════════════════════════
 # TABS
 # ═══════════════════════════════════════════════════════════════════════════════
-tab1, tab3, tab2 = st.tabs(["📊 Page 1 — Credential Tracking", "🎓 Page 2 — Certificate Details", "📈 Page 3 — Graduation Rate History"])
+tab1, tab3, tab2, tab_admin = st.tabs(["📊 Page 1 — Credential Tracking", "🎓 Page 2 — Certificate Details", "📈 Page 3 — Graduation Rate History", "⚙️ Data Entry"])
 
 # ──────────────────────────────────────────────────────────────────────────────
 # TAB 1
@@ -1013,7 +1013,7 @@ with tab3:
         (ma, f"{cert_total:,}",       f"{semester_key} Certificates Awarded"),
         (mb, f"{auto_total:,}",       f"{semester_key} Auto-Awarded"),
         (mc, f"{auto_rate:.1%}",      f"{semester_key} Auto-Award Rate"),
-        (md, f"{cert_incomplete:,}",  f"{semester_key} Incomplete"),
+        (md, f"{cert_incomplete:,}",  f"{semester_key} Not Awarded"),
     ]:
         col.markdown(f"""
         <div class="metric-tile">
@@ -1108,3 +1108,182 @@ with tab3:
           </table>
         </div>
         """, unsafe_allow_html=True)
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# ADMIN TAB — Data Entry
+# ──────────────────────────────────────────────────────────────────────────────
+with tab_admin:
+    st.markdown('<div class="report-title">Data Entry — New Semester</div>', unsafe_allow_html=True)
+
+    _pwd = st.text_input("Password", type="password", key="admin_pwd")
+    _correct = st.secrets.get("ADMIN_PASSWORD", "byui_admin")
+
+    if _pwd != _correct:
+        st.info("Enter the admin password to access data entry.")
+    else:
+        st.success("Authenticated. Fill in the fields below and click **Generate data.json** at the bottom.")
+        st.markdown("---")
+
+        # ── Semester Info ──────────────────────────────────────────────────────
+        st.subheader("1. Semester Info")
+        _c1, _c2 = st.columns(2)
+        _sem_key   = _c1.text_input("Semester Key",   placeholder="e.g. WI26", key="sk")
+        _sem_label = _c2.text_input("Semester Label", placeholder="e.g. Winter 2026", key="sl")
+
+        # ── Application Summary ────────────────────────────────────────────────
+        st.subheader("2. Application Summary")
+        _c1, _c2, _c3, _c4 = st.columns(4)
+        _apps  = _c1.number_input("Applications", min_value=0, step=1, key="as_apps")
+        _grad  = _c2.number_input("Graduated",    min_value=0, step=1, key="as_grad")
+        _other = _c3.number_input("Other",         min_value=0, step=1, key="as_other")
+        _inc   = _c4.number_input("Incomplete",    min_value=0, step=1, key="as_inc")
+
+        # ── Credential Types ───────────────────────────────────────────────────
+        st.subheader("3. Credential Types Awarded")
+        _c1, _c2, _c3 = st.columns(3)
+        _assoc = _c1.number_input("Associate",   min_value=0, step=1, key="ct_assoc")
+        _bach  = _c2.number_input("Bachelor",    min_value=0, step=1, key="ct_bach")
+        _cert  = _c3.number_input("Certificate", min_value=0, step=1, key="ct_cert")
+
+        # ── Holds ──────────────────────────────────────────────────────────────
+        st.subheader("4. Holds")
+        _c1, _c2 = st.columns(2)
+        _no_holds = _c1.number_input("No Holds", min_value=0, step=1, key="h_no")
+        _holds    = _c2.number_input("Holds",    min_value=0, step=1, key="h_yes")
+
+        # ── Incomplete Reasons ─────────────────────────────────────────────────
+        st.subheader("5. Incomplete Reasons")
+        st.caption("Fill only the rows you need — leave the rest blank.")
+        _inc_reasons = {}
+        for _i in range(6):
+            _c1, _c2 = st.columns([3, 1])
+            _r = _c1.text_input(f"Reason {_i+1}", placeholder="e.g. Missing Course", key=f"ir_name_{_i}")
+            _n = _c2.number_input("Count", min_value=0, step=1, key=f"ir_cnt_{_i}")
+            if _r.strip():
+                _inc_reasons[_r.strip()] = int(_n)
+
+        # ── Hold Codes ─────────────────────────────────────────────────────────
+        st.subheader("6. Hold Codes")
+        st.caption("Fill only the rows you need.")
+        _hold_codes = {}
+        for _i in range(5):
+            _c1, _c2 = st.columns([3, 1])
+            _code = _c1.text_input(f"Code {_i+1}", placeholder="e.g. PDUE", key=f"hc_code_{_i}")
+            _cnt  = _c2.number_input("Count", min_value=0, step=1, key=f"hc_cnt_{_i}")
+            if _code.strip():
+                _hold_codes[_code.strip()] = int(_cnt)
+
+        # ── Certificate Auto Award ─────────────────────────────────────────────
+        st.subheader("7. Certificate Auto Award")
+        _c1, _c2, _c3, _c4 = st.columns(4)
+        _auto_day  = _c1.number_input("Auto Day",        min_value=0, step=1, key="ca_day")
+        _auto_onln = _c2.number_input("Auto Online",     min_value=0, step=1, key="ca_onln")
+        _stu_app   = _c3.number_input("Student Applied", min_value=0, step=1, key="ca_stu")
+        _cert_inc  = _c4.number_input("Incomplete",      min_value=0, step=1, key="ca_inc")
+
+        # ── Tracking Table ─────────────────────────────────────────────────────
+        st.subheader("8. Application Tracking Table")
+        st.caption("Enter cohorts (rows) left to right newest→oldest, and censuses (columns) same order.")
+
+        _coh_cols = st.columns(4)
+        _cohorts = [c.text_input(f"Cohort {i+1}", placeholder="e.g. WI26", key=f"coh_{i}")
+                    for i, c in enumerate(_coh_cols)]
+
+        _cen_cols = st.columns(5)
+        _censuses = [c.text_input(f"Census {i+1}", placeholder="e.g. WI26", key=f"cen_{i}")
+                     for i, c in enumerate(_cen_cols)]
+
+        st.caption("For each cell: **—** = future/blank · **in progress** = currently open · **Numbers** = enter completed / applied")
+        _cells = {}
+        for _i, _coh in enumerate(_cohorts):
+            if not _coh.strip():
+                continue
+            _cells[_coh] = {}
+            _gcols = st.columns([1] + [2] * 5)
+            _gcols[0].markdown(f"**{_coh}**")
+            for _j, _cen in enumerate(_censuses):
+                if not _cen.strip():
+                    continue
+                with _gcols[_j + 1]:
+                    st.caption(_cen)
+                    _status = st.selectbox(
+                        "status", ["—", "in progress", "Numbers"],
+                        key=f"st_{_i}_{_j}", label_visibility="collapsed"
+                    )
+                    if _status == "Numbers":
+                        _comp = st.number_input("Completed", min_value=0, step=1, key=f"cp_{_i}_{_j}")
+                        _appl = st.number_input("Applied",   min_value=0, step=1, key=f"ap_{_i}_{_j}")
+                        _cells[_coh][_cen] = [int(_comp), int(_appl)]
+                    elif _status == "in progress":
+                        _cells[_coh][_cen] = "in progress"
+                    # "—" → key not added → None when looked up
+
+        # ── Completion History ─────────────────────────────────────────────────
+        st.subheader("9. Completion History — Add New Term")
+        st.caption("This adds a new row at the top of the history chart/table.")
+        _c1, _c2, _c3 = st.columns(3)
+        _hist_term = _c1.text_input("Term", placeholder="e.g. WI26", key="ht_term")
+        _hist_comp = _c2.number_input("Completed", min_value=0, step=1, key="ht_comp")
+        _hist_exp  = _c3.number_input("Expired",   min_value=0, step=1, key="ht_exp")
+
+        # ── Generate ───────────────────────────────────────────────────────────
+        st.markdown("---")
+        if st.button("Generate data.json", type="primary"):
+            if not _sem_key.strip():
+                st.error("Semester Key is required.")
+            elif not _sem_label.strip():
+                st.error("Semester Label is required.")
+            else:
+                _new_sem = {
+                    "label": _sem_label.strip(),
+                    "credential_types": {
+                        "Associate":   int(_assoc),
+                        "Bachelor":    int(_bach),
+                        "Certificate": int(_cert),
+                    },
+                    "application_summary": {
+                        "Applications": int(_apps),
+                        "Graduated":    int(_grad),
+                        "Other":        int(_other),
+                        "Incomplete":   int(_inc),
+                    },
+                    "holds": {
+                        "No Holds": int(_no_holds),
+                        "Holds":    int(_holds),
+                    },
+                    "incomplete_reasons":    _inc_reasons,
+                    "hold_codes":            _hold_codes,
+                    "certificate_auto_award": {
+                        "auto_day":        int(_auto_day),
+                        "auto_onln":       int(_auto_onln),
+                        "student_applied": int(_stu_app),
+                        "incomplete":      int(_cert_inc),
+                    },
+                    "tracking": {
+                        "cohorts":  [c for c in _cohorts  if c.strip()],
+                        "censuses": [c for c in _censuses if c.strip()],
+                        "cells":    _cells,
+                    },
+                }
+
+                _new_data = {
+                    "semesters": dict(data["semesters"]),
+                    "completion_history": list(data["completion_history"]),
+                }
+                _new_data["semesters"][_sem_key.strip()] = _new_sem
+
+                if _hist_term.strip():
+                    _new_data["completion_history"].insert(
+                        0, {"term": _hist_term.strip(), "completed": int(_hist_comp), "expired": int(_hist_exp)}
+                    )
+
+                _json_out = json.dumps(_new_data, indent=2)
+                st.download_button(
+                    label="⬇️ Download data.json",
+                    data=_json_out,
+                    file_name="data.json",
+                    mime="application/json",
+                    type="primary",
+                )
+                st.info("**Next steps:** Replace `data/data.json` in your repo with this file, then push to GitHub. The app will update automatically.")
