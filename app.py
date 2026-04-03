@@ -715,7 +715,7 @@ st.markdown("<br>", unsafe_allow_html=True)
 # ═══════════════════════════════════════════════════════════════════════════════
 # TABS
 # ═══════════════════════════════════════════════════════════════════════════════
-tab1, tab3, tab2, tab_admin = st.tabs(["📊 Page 1 — Credential Tracking", "🎓 Page 2 — Certificate Details", "📈 Page 3 — Graduation Rate History", "⚙️ Data Entry"])
+tab1, tab3, tab2 = st.tabs(["📊 Page 1 — Credential Tracking", "🎓 Page 2 — Certificate Details", "📈 Page 3 — Graduation Rate History"])
 
 # ──────────────────────────────────────────────────────────────────────────────
 # TAB 1
@@ -1111,9 +1111,9 @@ with tab3:
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# ADMIN TAB — Data Entry
+# ADMIN TAB — Data Entry (hidden — re-add tab_admin to st.tabs() to restore)
 # ──────────────────────────────────────────────────────────────────────────────
-with tab_admin:
+if False:  # noqa — tab hidden
     st.markdown('<div class="report-title">Data Entry — New Semester</div>', unsafe_allow_html=True)
 
     _pwd = st.text_input("Password", type="password", key="admin_pwd")
