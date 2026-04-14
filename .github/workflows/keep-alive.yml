@@ -1,0 +1,27 @@
+name: Keep Streamlit App Alive
+
+on:
+  schedule:
+    # Runs every 5 minutes
+    - cron: '*/5 * * * *'
+  workflow_dispatch: # allows manual trigger
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Streamlit app
+        run: |
+          echo "Pinging graduation-dashboard..."
+          # Try up to 3 times with 30s between attempts to handle cold starts
+          for i in 1 2 3; do
+            STATUS=$(curl -o /dev/null -s -w "%{http_code}" --max-time 60 https://graduation-dashboard.streamlit.app)
+            echo "Attempt $i: HTTP $STATUS"
+            if [ "$STATUS" = "200" ]; then
+              echo "App is up!"
+              exit 0
+            fi
+            sleep 30
+          done
+          echo "App did not respond after 3 attempts — may need manual reboot at share.streamlit.io"
+          exit 0  # don't fail the workflow, just warn
